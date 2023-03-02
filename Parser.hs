@@ -87,3 +87,19 @@ parseExpr = parseReserved <|> parseNumber
   <|> parseText
   <|> parseQuote
   <|> parseSExp
+
+-- wrapper monad for IO; allows leading whitespace and EOF
+contents :: Parser a -> Parser a
+contents p = do
+  Tok.whiteSpace lexer
+  r <- p
+  eof
+  return r
+
+-- for the REPL
+readExpr :: T.Text -> Either ParseError LispVal
+readExpr = parse (contents parseExpr) "<stdin>"
+
+-- for source
+readExprFile :: T.Text -> Either ParseError LispVal
+readExprFile = parse (contents parseList) "<file>"
