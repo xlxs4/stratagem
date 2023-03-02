@@ -1,21 +1,19 @@
-{-# LANGUAGE OverloadedStrings #-}
-import Data.Text as T
-
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 import qualified Data.Map as Map
+import qualified Data.Text as T
 
 import Control.Monad.Except
 import Control.Monad.Reader
 
+-- lexical environment
 type EnvCtx = Map.Map T.Text LispVal
 
-newtype Eval a = Eval { unEval :: ReaderT EnvCtx IO A }
-  deriving ( Monad
-           , Functor
-           , Applicative
-           , MonadReader EnvCtx
-           , MonadIO)
+-- evaluation monad; using monad transformers
+newtype Eval a = Eval { unEval :: ReaderT EnvCtx IO a }
+  deriving ( Monad, Functor, Applicative, MonadReader EnvCtx, MonadIO)
 
+-- S-Expression representation
 data LispVal
   = Atom T.Text
   | List [LispVal]
@@ -24,18 +22,21 @@ data LispVal
   | Fun IFunc
   | Lambda IFunc EnvCtx
   | Nil
-  | Bool Bool deriving (Eq)
-
-data IFunc = IFunc { fn :: [LispVal] -> Eval LispVal }
+  | Bool Bool
+  deriving (Eq)
 
 instance Show LispVal where
   show = T.unpack . showVal
 
+-- Haskell function
+data IFunc = IFunc { fn :: [LispVal] -> Eval LispVal }
+
+-- printing
 showVal :: LispVal -> T.Text
 showVal val =
   case val of
     (Atom atom)     -> atom
-    (String str)    -> T.concat ["\"" ,str,"\""]
+    (String str)    -> T.concat ["\"" , str, "\""]
     (Number num)    -> T.pack $ show num
     (Bool True)     -> "#t"
     (Bool False)    -> "#f"
