@@ -3,9 +3,23 @@ import LispVal
 import qualified Data.Map as Map
 import qualified Data.Text as T
 
-basicEnv :: Map.Map T.Text LispVal
-basicEnv = Map.fromList $ primEnv
-           <> [("read" , Fun $ IFunc $ unop $ readFn)]
+funcEnv :: Map.Map T.Text LispVal
+funcEnv = Map.fromList $ primEnv
+          <> [("read",  Fun $ IFunc $ unop readFn),
+              ("parse", Fun $ IFunc $ unop parseFn),
+              ("eval",  Fun $ IFunc $ unop eval),
+              ("show",  Fun $ IFunc $ unop (return . String . showVal))]
+
+basicEnv :: EnvCtx
+basicEnv = EnvCtx Map.empty funcEnv
+
+readFn :: LispVal -> Eval LispVal
+readFn (String txt) = lineToEvalForm txt
+readFn val          = throw $ TypeMismatch "read expects str, got: " val
+
+parseFn :: LispVal -> Eval LispVal
+parseFn (String txt) = either (throw . PError . show) return $ readExpr txt
+parseFn val = throw $ TypeMismatch "parse expects str, got: " val
 
 -- exec while catching exceptions
 -- unwraps caught exception to LispException

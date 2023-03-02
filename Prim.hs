@@ -56,36 +56,44 @@ fileExists vcal = throw $ TypeMismatch "expects str, got: " val
 
 slurp :: LispVal -> Eval LispVal
 slurp (String txt) = liftIO $ wFileSlurp txt
-slurp val = throw $ TypeMismatch "expects str, got: " val
+slurp val = throw $ TypeMismatch "read expects str, got: " val
 
 wFileSlurp :: T.Text -> IO LispVal
 wFileSlurp fileName = withFile (T.unpack fileName) ReadMode go
   where go = readTextFile fileName
 
+openURL :: T.Text -> IO LispVal
+openURL x = do
+  req  <- simpleHTTP (getRequest $ T.unpack x)
+  body <- getResponseBody req
+  return $ String . T.pack body
+
+wSlurp :: LispVal -> Eval LispVal
+wSlurp (String txt) = liftIO $ openURL txt
+wSlurp val = throw $ TypeMismatch "wSlurp expects str, got: " val
+
 readTextFile :: T.Text -> Handle -> IO LispVal
 readTextFile fileName handle = do
-  exists <- hIsEOF handle
+  exists <- doesFileExist $ T.unpack fileName
   if exists
   then (TIO.hGetContents handle) >>= (return . String)
-  else throw $ IOError $ T.concat ["file does not exists: ", fileName]
+  else throw $ IOError $ T.concat ["file does not exist: ", fileName]
 
-cons :: [LispVal] -> Eval LispVal
-cons [x,y@(List yList)] = return $ List $ x:yList
-cons [c]                = return $ List [c]
-cons []                 = return $ List []
-cons _                  = throw $ ExpectedList "cons, in second argument"
+put ::LispVal -> LispVal -> Eval LispVal
+put (String file) (String msg) = liftIO $ wFilePut file msg
+put (String _) val = throw $ TypeMismatch "put expects str in the second argument (try using show), got: " val
+put val _ = throw $ TypeMismatch "put expects str, got: " val
 
-car :: [LispVal] -> Eval LispVal
-car [List []]    = return Nil
-car [List (x:_)] = return x
-car []           = return Nil
-car x            = throw $ ExpectedList "car"
+wFilePut :: T.Text -> T.Text -> IO LispVal
+wFilePut fileName msg = withFil (T.unpack fileName) WriteMode go
+  where go = putTetFile fileName msg
 
-cdr :: [LispVal] -> Eval LispVal
-cdr [List (x:s)] = return $ List xs
-cdr [List []]    = return Nil
-cdr []           = return Nil
-cdr x            = throw $ ExpectedList "cdr"
+putTextFile :: T.Text -> T.Text -> Handle -> IO LispVal
+putTextFile fileName msg handle = do
+  canWrite <- hIsWritable handle
+  if canWrite
+  then (TIO.hPutStr handle msg) >> (return $ String msg)
+  else throw $ IOError $ T.concat ["file does not exist: ", fileName]
 
 numBool :: (Integer -> Bool) -> LispVal -> Eval LispVal
 numBool op (Number x) = return $ Bool $ op x
@@ -122,3 +130,21 @@ eqCmd (String x) (String y) = return . Bool $ x == y
 eqCmd (Bool   x) (Bool   y) = return . Bool $ x == y
 eqCmd Nil        Nil        = return $ Bool True
 eqCmd _          _          = return $ Bool False
+
+cons :: [LispVal] -> Eval LispVal
+cons [x,y@(List yList)] = return $ List $ x:yList
+cons [c]                = return $ List [c]
+cons []                 = return $ List []
+cons _                  = throw $ ExpectedList "cons, in second argument"
+
+car :: [LispVal] -> Eval LispVal
+car [List []]    = return Nil
+car [List (x:_)] = return x
+car []           = return Nil
+car x            = throw $ ExpectedList "car"
+
+cdr :: [LispVal] -> Eval LispVal
+cdr [List (x:s)] = return $ List xs
+cdr [List []]    = return Nil
+cdr []           = return Nil
+cdr x            = throw $ ExpectedList "cdr"
