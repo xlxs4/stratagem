@@ -7,6 +7,18 @@ basicEnv :: Map.Map T.Text LispVal
 basicEnv = Map.fromList $ primEnv
            <> [("read" , Fun $ IFunc $ unop $ readFn)]
 
+-- exec while catching exceptions
+-- unwraps caught exception to LispException
+safeExec :: IO a -> IO (Either String a)
+safeExec m = do
+  result <- Control.Exception.try m
+  case result of
+    Left (eTop :: SomeException) ->
+      case fromException eTop of
+        Just (enclosed :: LispException) -> return $ Left (show enclosed)
+        Nothing                          -> return $ Left (show eTop)
+    Right val -> return $ Right val
+
 -- run a program file
 evalFile :: T.Text -> IO ()
 evalFile fileExpr = (runASTinEnv basicEnv $ fileToEvalForm fileExpr)
