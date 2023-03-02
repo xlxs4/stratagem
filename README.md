@@ -1,6 +1,12 @@
 # stratagem
 A Scheme-like programming language implemented in Haskell
 
+stratagem /ˈstratədʒəm/ *noun*: a plan or **scheme**, especially one used to outwit an opponent or achieve an end.
+
+> a series of devious stratagems
+
+Archaic: skill in devising plans or schemes; cunning.
+
 ### Developing
 
 You need Haskell, and a build tool such as Cabal or Stack.
