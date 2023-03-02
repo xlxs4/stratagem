@@ -86,3 +86,39 @@ cdr [List (x:s)] = return $ List xs
 cdr [List []]    = return Nil
 cdr []           = return Nil
 cdr x            = throw $ ExpectedList "cdr"
+
+numBool :: (Integer -> Bool) -> LispVal -> Eval LispVal
+numBool op (Number x) = return $ Bool $ op x
+numBool op x          = throw $ TypeMismatch "numeric op " x
+
+numOp :: (Integer -> Integer -> Integer) -> LispVal -> LispVal -> Eval LispVal
+numOp op (Number x) (Number y) = return $ Number $ op x y
+numOp op x          (Number y) = throw $ TypeMismatch "numeric op " x
+numOp op (Number x) y          = throw $ TypeMismatch "numeric op " y
+numOp op x          y          = throw $ TypeMismatch "numeric op " x
+
+strOp :: (T.Text -> T.Text -> T.Text) -> LispVal -> LispVal -> Eval LispVal
+strOp op (String x) (String y) = return $ String $ op x y
+strOp op x          (String y) = throw $ TypeMismatch "string op " x
+strOp op (String x) y          = throw $ TypeMismatch "string op " y
+strOp op x          y          = throw $ TypeMismatch "string op " x
+
+eqOp :: (Bool -> Bool -> Bool) -> LispVal -> LispVal -> Eval LispVal
+eqOp op (Bool x) (Bool y) = return $ Bool $ op x y
+eqOp op x        (Bool y) = throw $ TypeMismatch "bool op " x
+eqOp op (Bool x) y        = throw $ TypeMismatch "bool op " y
+eqOp op x        y        = throw $ TypeMismatch "bool op " x
+
+numCmp :: (Integer -> Integer -> Bool) -> LispVal -> LispVal -> Eval LispVal
+numCmp op (Number x) (Number y) = return . Bool $ op x y
+numCmp op x          (Number y) = throw $ TypeMismatch "numeric op " x
+numCmp op (Number x) y          = throw $ TypeMismatch "numeric op " y
+numCmp op x          y          = throw $ TypeMismatch "numeric op " x
+
+eqCmd :: LispVal -> LispVal -> Eval LispVal
+eqCmd (Atom   x) (Atom   y) = return . Bool $ x == y
+eqCmd (Number x) (Number y) = return . Bool $ x == y
+eqCmd (String x) (String y) = return . Bool $ x == y
+eqCmd (Bool   x) (Bool   y) = return . Bool $ x == y
+eqCmd Nil        Nil        = return $ Bool True
+eqCmd _          _          = return $ Bool False
