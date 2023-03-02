@@ -131,4 +131,4 @@ eval (List ((:) x xs)) = do -- application, straight from λ calculus
     (Fun (IFunc internalFn)) -> internalFn xVal
     (Lambda (IFunc internalfn) boundenv) -> local (const boundenv)
                                                 $ internalfn xVal
-    _                        -> throw $ NotFunction funVar
+    _ -> throw $ NotFunction funVar

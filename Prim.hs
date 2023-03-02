@@ -48,3 +48,23 @@ binopFold op farg args = case args of
                            [a,b]  -> op a b
                            (a:as) -> foldM op farg args
                            [] -> throw $ NumArgs 2 args
+
+fileExists :: LispVal -> Eval LispVal
+fileExists (Atom atom)  = fileExists $ String atom
+fileExists (String txt) = Bool <$> liftIO (doesFileExist $ T.unpack txt)
+fileExists vcal = throw $ TypeMismatch "expects str, got: " val
+
+slurp :: LispVal -> Eval LispVal
+slurp (String txt) = liftIO $ wFileSlurp txt
+slurp val = throw $ TypeMismatch "expects str, got: " val
+
+wFileSlurp :: T.Text -> IO LispVal
+wFileSlurp fileName = withFile (T.unpack fileName) ReadMode go
+  where go = readTextFile fileName
+
+readTextFile :: T.Text -> Handle -> IO LispVal
+readTextFile fileName handle = do
+  exists <- hIsEOF handle
+  if exists
+  then (TIO.hGetContents handle) >>= (return . String)
+  else throw $ IOError $ T.concat ["file does not exists: ", fileName]
