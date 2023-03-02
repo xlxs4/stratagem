@@ -48,6 +48,34 @@ runParseTest :: T.Text -> T.Text
 runParseTest input = either (T.pack . show)
                             (T.pack . show)
 
+sTDLIB :: T.Text
+sTDLIB = "lib/stdlib.scm"
+
+endOfList :: LispVal -> LispVal -> LispVal
+endOfList (List x) expr = List $ x ++ [epr]
+endOfList n _ = throw $ TypeMismatch "failure to get variable: " n
+
+parseWithLib :: T.Text -> T.Text -> Either ParseError LispVal
+parseWithLib std inp = do
+  stdlib <- readExprFile std
+  expr   <- readExpr inp
+  return $ endOfList stdlib expr
+
+getFileContents :: FilePath -> IO T.Text
+getFileContents fname = do
+  exists <- doesFileExist fname
+  if exists
+  then TIO.readFile fname
+  else return "file does not exist"
+
+textToEvalForm :: T.Text -> T.Text -> Eval LispVal
+textToEvalForm std input = either (throw . PError . show) evalBody $ parseWithLib std input
+
+evalText :: T.Text -> IO () -- REPL
+evalText textExpr = do
+  stdlib <- getFileContents $ T.unpack sTDLIB
+  res <- runASTinEnv basicEnv $ textToEvalForm stdlib textExpr
+
 -- unwrap Eval to access the data and run in the environment
 runASTinEnv :: EnvCtx -> Eval b -> IO b
 runASTinEnv code action = runResourceT
