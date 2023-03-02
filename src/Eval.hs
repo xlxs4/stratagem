@@ -146,3 +146,20 @@ eval (List ((:) x xs)) = do -- application, straight from λ calculus
     (Lambda (IFunc internalfn) boundenv) -> local (const boundenv)
                                                 $ internalfn xVal
     _ -> throw $ NotFunction funVar
+
+-- we need to support compositions of car and cdr like caddar
+eval all@(List [Atom "cdr", List [Atom "quote", List (x:xs)]]) =
+  return $ List xs
+eval all@(List [Atom "cdr", arg@(List (x:xs))]) =
+  case x of
+    Atom _ -> do val <- eval arg
+                 eval $ List [Atom "cdr", val]
+    _ -> return $ List xs
+
+eval all@(List [Atom "car", List [Atom "quote", List (x:xs)]]) =
+  return $ x
+eval all@(List [Atom "car", arg@(List (x:xs))]) =
+  case x of
+    Atom _ -> do val <- eval arg
+                 eval $ List [Atom "car", val]
+    _ -> return $ x
