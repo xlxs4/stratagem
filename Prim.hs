@@ -68,3 +68,21 @@ readTextFile fileName handle = do
   if exists
   then (TIO.hGetContents handle) >>= (return . String)
   else throw $ IOError $ T.concat ["file does not exists: ", fileName]
+
+cons :: [LispVal] -> Eval LispVal
+cons [x,y@(List yList)] = return $ List $ x:yList
+cons [c]                = return $ List [c]
+cons []                 = return $ List []
+cons _                  = throw $ ExpectedList "cons, in second argument"
+
+car :: [LispVal] -> Eval LispVal
+car [List []]    = return Nil
+car [List (x:_)] = return x
+car []           = return Nil
+car x            = throw $ ExpectedList "car"
+
+cdr :: [LispVal] -> Eval LispVal
+cdr [List (x:s)] = return $ List xs
+cdr [List []]    = return Nil
+cdr []           = return Nil
+cdr x            = throw $ ExpectedList "cdr"
