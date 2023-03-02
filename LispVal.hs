@@ -1,6 +1,7 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
+import Data.Text as T
 
-import qualified Data.Text as T
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 import qualified Data.Map as Map
 
 import Control.Monad.Except
@@ -16,7 +17,7 @@ newtype Eval a = Eval { unEval :: ReaderT EnvCtx IO A }
            , MonadIO)
 
 data LispVal
-  = Atom T.text
+  = Atom T.Text
   | List [LispVal]
   | Number Integer
   | String T.Text
@@ -26,3 +27,19 @@ data LispVal
   | Bool Bool deriving (Eq)
 
 data IFunc = IFunc { fn :: [LispVal] -> Eval LispVal }
+
+instance Show LispVal where
+  show = T.unpack . showVal
+
+showVal :: LispVal -> T.Text
+showVal val =
+  case val of
+    (Atom atom)     -> atom
+    (String str)    -> T.concat ["\"" ,str,"\""]
+    (Number num)    -> T.pack $ show num
+    (Bool True)     -> "#t"
+    (Bool False)    -> "#f"
+    Nil             -> "Nil"
+    (List contents) -> T.concat ["(", T.unwords $ showVal <$> contents, ")"]
+    (Fun _)         -> "(internal function)"
+    (Lambda _ _)    -> "(lambda function)"
