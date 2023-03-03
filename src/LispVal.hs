@@ -47,6 +47,9 @@ instance Show LispVal where
 -- Haskell function
 data IFunc = IFunc { fn :: [LispVal] -> Eval LispVal }
 
+instance Eq IFunc where
+  (==) _ _ = False
+
 -- printing
 showVal :: LispVal -> T.Text
 showVal val =
@@ -70,8 +73,10 @@ data LispException
   | NotFunction LispVal
   | UnboundVar T.Text
   | Default LispVal
-  | PError String
+  | PError String -- from show anyway
   | IOError T.Text
+
+instance Exception LispException
 
 instance Show LispException where
   show = T.unpack . showError
