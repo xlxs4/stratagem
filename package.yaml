@@ -1,0 +1,62 @@
+name:                stratagem
+version:             0.1.0.0
+github:              "xlxs4/stratagem"
+license-file:        LICENSE
+author:              "Orestis Ousoultzoglou"
+maintainer:          "orousoultzoglou@gmail.com"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# synopsis:            Short description of your package
+# category:            Web
+
+description:         Please see the README on GitHub at <https://github.com/xlxs4/stratagem#readme>
+
+dependencies:
+- base >= 4.8 && < 5
+
+ghc-options:
+- -Werror
+- -fno-warn-unused-do-bind
+- -fno-warn-unused-binds
+- -fno-warn-type-defaults
+- -fno-warn-name-shadowing
+- -fwarn-duplicate-exports
+- -fwarn-dodgy-exports
+- -fwarn-dodgy-imports
+- -fwarn-incomplete-patterns
+- -fwarn-incomplete-record-updates
+- -fwarn-missing-fields
+- -fwarn-missing-methods
+- -fwarn-orphans
+- -fwarn-overlapping-patterns
+- -fwarn-unused-imports
+- -fwarn-tabs
+- -fwarn-unrecognised-pragmas
+
+library:
+  source-dirs: src
+
+executables:
+  stratagem-exe:
+    main:                Main.hs
+    source-dirs:         exec
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - stratagem
+
+tests:
+  stratagem-test:
+    main:                Main.hs
+    source-dirs:         test-hs/Spec/
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - stratagem

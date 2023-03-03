@@ -1,0 +1,77 @@
+cabal-version: 2.4
+
+name:           stratagem
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/xlxs4/stratagem#readme>
+homepage:       https://github.com/xlxs4/stratagem#readme
+bug-reports:    https://github.com/xlxs4/stratagem/issues
+author:         Orestis Ousoultzoglou
+maintainer:     orousoultzoglou@gmail.com
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/xlxs4/stratagem
+
+common common-options
+  build-depends:   base >=4.8 && <5
+  other-modules:   Paths_stratagem
+  autogen-modules: Paths_stratagem
+  ghc-options:
+    -Wall -Wextra -Wcompat -Widentities
+    -Wincomplete-uni-patterns -Wincomplete-record-updates
+    -Wredundant-constraints -Wnoncanonical-monad-instances
+
+  if impl(ghc >=8.2)
+    ghc-options: -fhide-source-paths
+
+  if impl(ghc >=8.4)
+    ghc-options: -Wmissing-export-lists -Wpartial-fields
+
+  if impl(ghc >=8.8)
+    ghc-options: -fwrite-ide-info -hiedir=.hie
+
+  if impl(ghc >=8.10)
+    ghc-options: -Wunused-packages
+
+  default-extensions:
+    OverloadedStrings
+    StrictData
+
+  default-language: Haskell2010
+
+library
+  import: common-options
+  exposed-modules:
+      Cli
+      Eval
+      LispVal
+      Parser
+      Prim
+      Repl
+  hs-source-dirs:
+      src
+  ghc-options: -Werror -fno-warn-unused-do-bind -fno-warn-unused-binds -fno-warn-type-defaults -fno-warn-name-shadowing -fwarn-duplicate-exports -fwarn-dodgy-exports -fwarn-dodgy-imports -fwarn-incomplete-patterns -fwarn-incomplete-record-updates -fwarn-missing-fields -fwarn-missing-methods -fwarn-orphans -fwarn-overlapping-patterns -fwarn-unused-imports -fwarn-tabs -fwarn-unrecognised-pragmas
+  build-depends:
+    , containers
+    , directory
+    , haskeline
+    , HTTP
+    , mtl
+    , optparse-applicative
+    , parsec
+    , text
+  default-language: Haskell2010
+
+executable stratagem
+  import: common-options
+  main-is: Main.hs
+  hs-source-dirs:
+      exec
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends: stratagem
