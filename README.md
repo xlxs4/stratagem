@@ -33,3 +33,17 @@ stack build
 stack exec stratagem -- "$@"
 ```
 
+To run the tests:
+
+``` shell
+stack test
+# or instead
+stack build --test
+```
+
+To run only the Golden but not the HSpec suite:
+
+``` shell
+stack test --test-golden
+```
+
