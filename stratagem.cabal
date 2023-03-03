@@ -75,3 +75,14 @@ executable stratagem
       exec
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends: stratagem
+
+test-suite test
+  import: common-options
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs: test-hs/Spec/
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+    , hspec
+    , stratagem
+    , text
