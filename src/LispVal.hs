@@ -1,13 +1,29 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
+module LispVal (
+  LispVal(..),
+  Eval(..),
+  IFunc(..),
+  EnvCtx(..),
+  LispException(..),
+  showVal,
+) where
+
 import qualified Data.Map as Map
 import qualified Data.Text as T
 
-import Control.Monad.Except
+import Control.Exception ( Exception )
 import Control.Monad.Reader
+    ( MonadIO, MonadReader, ReaderT(ReaderT) )
 
 -- lexical environment
-type EnvCtx = Map.Map T.Text LispVal
+type ValCtx = Map.Map T.Text LispVal
+type FnCtx  = Map.Map T.Text LispVal
+
+data EnvCtx = EnvCtx
+  { env :: ValCtx
+  , fenv :: FnCtx
+  } deriving (Eq)
 
 -- evaluation monad; using monad transformers
 newtype Eval a = Eval { unEval :: ReaderT EnvCtx IO a }

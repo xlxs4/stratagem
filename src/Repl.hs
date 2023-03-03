@@ -1,3 +1,17 @@
+{-# LANGUAGE OverloadedStrings #-}
+
+module Repl (
+  mainLoop,
+) where
+
+import Eval ( safeExec, evalText )
+import Eval ( runParseTest )
+import Data.Text as T ( pack )
+
+import Control.Monad.Trans ( MonadIO(liftIO) )
+import System.Console.Haskeline
+    ( defaultSettings, getInputLine, outputStrLn, runInputT, InputT )
+
 type Repl a = InputT IO a
 
 mainLoop :: IO ()

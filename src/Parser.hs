@@ -1,16 +1,40 @@
-import LispVal
+module Parser (
+  readExpr,
+  readExprFile
+) where
+
+import LispVal ( LispVal(List, Bool, Nil, Number, String, Atom) )
+
 import Text.Parsec
-import Text.Parsec.Text
-import Text.Parsec.Expr
+    ( char,
+      digit,
+      hexDigit,
+      letter,
+      octDigit,
+      oneOf,
+      string,
+      eof,
+      many1,
+      sepBy,
+      (<?>),
+      (<|>),
+      parse,
+      try,
+      ParseError,
+      SourceName )
+import Text.Parsec.Text ( Parser )
 
 -- Alex & Happy would be probably better for this
 import qualified Text.Parsec.Token as Tok
 import qualified Text.Parsec.Language as Lang
 
+import Data.Functor (($>))
 import Data.Functor.Identity (Identity)
+import Data.List ( foldl' )
 
 import qualified Data.Text as T
-import Control.Applicative hiding ((<|>))
+import Data.Char (digitToInt)
+import Control.Monad (mzero)
 
 lexer :: Tok.GenTokenParser T.Text () Identity
 lexer = Tok.makeTokenParser style

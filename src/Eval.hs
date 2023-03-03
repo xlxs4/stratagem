@@ -1,7 +1,42 @@
-import LispVal
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
-import qualified Data.Map as Map
+module Eval (
+  evalText,
+  evalFile,
+  runParseTest,
+  safeExec,
+  -- testing
+  runASTinEnv,
+  basicEnv,
+  fileToEvalForm,
+  textToEvalForm,
+  getFileContents
+) where
+
+import Prim ( primEnv, unop )
+import Parser ( readExpr, readExprFile )
+import LispVal
+    ( LispException(Default, PError, UnboundVar, TypeMismatch,
+               BadSpecialForm, NotFunction ),
+    IFunc(IFunc),
+    LispVal(..),
+    Eval(unEval),
+    EnvCtx(..),
+    showVal )
+
+import Data.Map as Map
+    ( empty, fromList, insert, lookup, partition, toList, union, Map )
 import qualified Data.Text as T
+import Data.Text.IO as TIO
+import System.Directory ( doesFileExist )
+
+import Text.Parsec ( ParseError )
+
+import Control.Monad.Reader
+    ( asks, MonadIO(liftIO), MonadReader(local, ask), ReaderT(runReaderT) )
+import Control.Exception
+    ( try, throw, Exception(fromException), SomeException )
 
 funcEnv :: Map.Map T.Text LispVal
 funcEnv = Map.fromList $ primEnv

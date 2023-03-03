@@ -1,8 +1,23 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import LispVal
+module Prim ( primEnv, unop ) where
 
-import Data.Text as T
+import LispVal
+    ( LispException(NumArgs, IOError, TypeMismatch, ExpectedList),
+      IFunc(IFunc),
+      LispVal(Atom, Fun, Number, String, Bool, Nil, List),
+      Eval )
+
+import Data.Functor ((<&>))
+import Data.Text as T ( Text, concat, pack, unpack )
+import Data.Text.IO as TIO ( hGetContents, hPutStr )
+import System.Directory ( doesFileExist )
+import System.IO
+    ( Handle, hIsWritable, withFile, IOMode(WriteMode, ReadMode) )
+import Network.HTTP ( getRequest, getResponseBody, simpleHTTP )
+
+import Control.Monad.Except ( foldM, MonadIO(liftIO) )
+import Control.Exception ( throw )
 
 type Prim   = [(T.Text, LispVal)]
 type Unary  = LispVal -> Eval LispVal
