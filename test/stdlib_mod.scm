@@ -49,9 +49,13 @@
                      (cons init (unfold func (func init) pred)))))
 (define fold (lambda (f a l) (foldl f a l)))
 
+(define reduce (lambda (f a l) (fold f a l)))
+
+{-
 (define zero?     (curry = 0))
 (define positive? (curry < 0))
 (define negative? (curry > 0))
+-}
 
 (define max (lambda (x num-list)
               (fold (lambda (y z) (if (> y z) y z))
@@ -95,6 +99,7 @@
                         '()
                         lst)))
 
+{-
 (define (sum . lst)     (fold + 0 lst))
 (define (product . lst) (fold * 1 lst))
 (define (and . lst)     (fold && #t lst))
@@ -102,3 +107,4 @@
 
 (define (any? pred . lst)   (apply or (map pred lst)))
 (define (every? pred . lst) (apply and (map pred lst)))
+-}

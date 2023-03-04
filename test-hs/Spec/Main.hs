@@ -37,22 +37,26 @@ main = do
       readExpr "#f" `shouldBe` Right (Bool False)
     it "Nil" $
       readExpr "'()" `shouldBe` Right Nil
+
     it "S-Expr: homogenous list" $
       readExpr "(2 1 87)" `shouldBe`
       Right (List [Number 2, Number 1, Number 87])
     it "S-Expr: homogenous list quoted" $
       readExpr "'(2 1 87)" `shouldBe`
       Right (List [Atom "quote", List [Number 2, Number 1, Number 87]])
+
     it "S-Expr: heterogenous list" $
       readExpr "(stormTrooper \"Fn\" 2 1 87)" `shouldBe`
       Right (List [Atom "stormTrooper", String "Fn", Number 2, Number 1, Number 87])
     it "S-Epxr: heterogenous list quoted" $
       readExpr "'(stormTrooper \"Fn\" 2 1 87)" `shouldBe`
       Right (List [Atom "quote", List [Atom "stormTrooper", String "Fn", Number 2, Number 1, Number 87]])
+
     it "S-Expr: single negative" $
       readExpr "(-42)" `shouldBe` Right (List [Number (-42)])
     it "S-Expr: (- num)" $
       readExpr "(- 42)" `shouldBe` Right (List [Atom "-", Number 42])
+
     it "S-Expr: prim call: nums" $
       readExpr "(+ 1 2)" `shouldBe`
       Right (List [Atom "+", Number 1, Number 2])
@@ -62,11 +66,36 @@ main = do
     it "S-Expr: prim call: atoms" $
       readExpr "(- rogue squadron)" `shouldBe`
       Right (List [Atom "-", Atom "rogue", Atom "squadron"])
+
     it "S-Expr: nested list" $
       readExpr "(lambda (x x) (+ x x))" `shouldBe`
       Right (List [Atom "lambda", List [Atom "x", Atom "x"], List [Atom "+", Atom "x", Atom "x"]])
+
     it "Comment: end-of/single line" $
       readExpr ";skip\nartoodetoo ;extra will throw\n;skip" `shouldBe` Right (Atom "artoodetoo")
     it "Comment: multi-line line" $
       readExpr "{-Han\nShot\nFirst\n-} (c3 {- these are not the droids you're looking for -} po\n)" `shouldBe`
       Right (List [Atom "c3", Atom "po"])
+
+  hspec $ describe "src/Eval.hs" $ do
+    wStd "test/add.scm" $ Number 3
+
+-- run file w/ stdlib
+wStd :: T.Text -> LispVal -> SpecWith ()
+wStd = runExpr (Just "test/stdlib_mod.scm")
+
+runExpr :: Maybe T.Text -> T.Text -> LispVal -> SpecWith ()
+runExpr std file val =
+  it (T.unpack file) $ evalVal `shouldBe` val
+  where evalVal = unsafePerformIO $ evalTextTest std file
+{-# NOINLINE runExpr #-}
+
+evalTextTest :: Maybe T.Text -> T.Text -> IO LispVal -- REPLE
+evalTextTest (Just stdlib) file = do
+  stdlibC <- getFileContents $ T.unpack stdlib
+  f       <- getFileContents $ T.unpack file
+  runASTinEnv basicEnv $ textToEvalForm stdlibC f
+
+evalTextTest Nothing file = do
+  f <- getFileContents $ T.unpack file
+  runASTinEnv basicEnv $ fileToEvalForm (T.unpack file) f
