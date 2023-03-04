@@ -78,11 +78,27 @@ main = do
       Right (List [Atom "c3", Atom "po"])
 
   hspec $ describe "src/Eval.hs" $ do
-    wStd "test/add.scm" $ Number 3
+    wStd "test/add.scm"           $ Number 3
+    wStd "test/if_alt.scm"        $ Number 2
+    wStd "test/let.scm"           $ Number 321
+    wStd "test/eval_bool.scm"     $ Bool True
+    wStd "test/eval_bool_ops.scm" $ Bool True
+    wStd "test/eval_lambda.scm"   $ Number 5
+    wStd "test/test_quote.scm"    $ List [Atom "xNotFound", Atom "yNotFound"]
+    wStd "test/test_car.scm"      $ Number 1
+    wStd "test/test_cdr.scm"      $ List [Number 2]
+    wStd "test/test_cadadr.scm"   $ Number 42
+    wStd "test/test_gt.scm"       $ List [Bool True, Bool False]
 
 -- run file w/ stdlib
 wStd :: T.Text -> LispVal -> SpecWith ()
 wStd = runExpr (Just "test/stdlib_mod.scm")
+
+tExpr :: T.Text -> T.Text -> LispVal -> SpecWith ()
+tExpr note expr val =
+  it (T.unpack note) $ evalVal `shouldBe` val
+  where evalVal = unsafePerformIO $ runASTinEnv basicEnv $ fileToEvalForm "" expr
+{-# NOINLINE tExpr #-}
 
 runExpr :: Maybe T.Text -> T.Text -> LispVal -> SpecWith ()
 runExpr std file val =
@@ -90,7 +106,7 @@ runExpr std file val =
   where evalVal = unsafePerformIO $ evalTextTest std file
 {-# NOINLINE runExpr #-}
 
-evalTextTest :: Maybe T.Text -> T.Text -> IO LispVal -- REPLE
+evalTextTest :: Maybe T.Text -> T.Text -> IO LispVal -- REPL
 evalTextTest (Just stdlib) file = do
   stdlibC <- getFileContents $ T.unpack stdlib
   f       <- getFileContents $ T.unpack file
@@ -99,3 +115,15 @@ evalTextTest (Just stdlib) file = do
 evalTextTest Nothing file = do
   f <- getFileContents $ T.unpack file
   runASTinEnv basicEnv $ fileToEvalForm (T.unpack file) f
+
+-- run text expr w/ file
+tExprStd :: T.Text -> T.Text -> LispVal -> SpecWith ()
+tExprStd note expr val =
+  it (T.unpack note) $ evalVal `shouldBe` val
+  where evalVal = unsafePerformIO $ evalExprTest expr
+{-# NOINLINE tExprStd #-}
+
+evalExprTest :: T.Text -> IO LispVal -- REPL
+evalExprTest expr = do
+  stdlib <- getFileContents $ T.unpack "test/stdlib_mod.scm"
+  runASTinEnv basicEnv $ textToEvalForm stdlib expr
