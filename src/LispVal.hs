@@ -27,7 +27,7 @@ data EnvCtx = EnvCtx
 
 -- evaluation monad; using monad transformers
 newtype Eval a = Eval { unEval :: ReaderT EnvCtx IO a }
-  deriving ( Monad, Functor, Applicative, MonadReader EnvCtx, MonadIO)
+  deriving (Monad, Functor, Applicative, MonadReader EnvCtx, MonadIO)
 
 -- S-Expression representation
 data LispVal
@@ -59,10 +59,13 @@ showVal val =
     (Number num)    -> T.pack $ show num
     (Bool True)     -> "#t"
     (Bool False)    -> "#f"
-    Nil             -> "Nil"
-    (List contents) -> T.concat ["(", T.unwords $ showVal <$> contents, ")"]
+    Nil             -> "'()"
+    (List contents) -> T.concat ["(", unwordsList contents, ")"]
     (Fun _)         -> "(internal function)"
     (Lambda _ _)    -> "(lambda function)"
+
+unwordsList :: [LispVal] -> T.Text
+unwordsList list = T.unwords $ showVal <$> list
 
 data LispException
   = NumArgs Integer [LispVal]
@@ -80,9 +83,6 @@ instance Exception LispException
 
 instance Show LispException where
   show = T.unpack . showError
-
-unwordsList :: [LispVal] -> T.Text
-unwordsList list = T.unwords $ showVal <$> list
 
 showError :: LispException -> T.Text
 showError err =

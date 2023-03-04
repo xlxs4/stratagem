@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Parser (
   readExpr,
   readExprFile
@@ -47,7 +49,7 @@ style = Lang.emptyDef {
   , Tok.commentLine = ";"
   , Tok.opStart = mzero
   , Tok.opLetter = mzero
-  , Tok.identStart = letter <|> oneOf "!$%&**/:<=>?^_~"
+  , Tok.identStart = letter <|> oneOf "!$%&*/:<=>?^_~"
   , Tok.identLetter = digit <|> letter <|> oneOf "!$%&*/:<=>?^_~+-.@"
   }
 

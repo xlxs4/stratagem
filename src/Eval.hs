@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts#-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
@@ -28,7 +29,7 @@ import LispVal
 import Data.Map as Map
     ( empty, fromList, insert, lookup, partition, toList, union, Map )
 import qualified Data.Text as T
-import Data.Text.IO as TIO
+import qualified Data.Text.IO as TIO
 import System.Directory ( doesFileExist )
 
 import Text.Parsec ( ParseError )
@@ -137,7 +138,7 @@ getEven (x:xs) = x : getOdd xs
 
 getOdd :: [t] -> [t]
 getOdd [] = []
-getOdd (_:xs) = getOdd xs
+getOdd (_:xs) = getEven xs
 
 applyLambda :: LispVal -> [LispVal] -> [LispVal] -> Eval LispVal
 applyLambda expr params args = bindArgsEval params args expr
