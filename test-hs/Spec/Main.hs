@@ -89,6 +89,8 @@ main = do
     wStd "test/test_cdr.scm"      $ List [Number 2]
     wStd "test/test_cadadr.scm"   $ Number 42
     wStd "test/test_gt.scm"       $ List [Bool True, Bool False]
+    wStd "test/test_scope1.scm"   $ Number 413281
+    wStd "test/test_scope2.scm"   $ Number 11
 
 -- run file w/ stdlib
 wStd :: T.Text -> LispVal -> SpecWith ()
