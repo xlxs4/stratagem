@@ -99,6 +99,12 @@ main = do
     runExpr Nothing "test/define_lambda.scm"  $ String "smalltalk"
     runExpr Nothing "test/test_eval_args.scm" $ Number 1558
 
+  hspec $ describe "optional" $ do
+    tExpr "(extra) begin/define" "begin (define x 1) (define y (+ x 10)) (+ x y)"
+      $ Number 12
+    tExprStd "(extra) fold call w/ append" "(fold string-append \"Y\" '(\"com\" \"bin\" \"ator\"))"
+      $ String "Ycombinator"
+
 -- run file w/ stdlib
 wStd :: T.Text -> LispVal -> SpecWith ()
 wStd = runExpr (Just "test/stdlib_mod.scm")
