@@ -94,6 +94,11 @@ main = do
     wStd "test/test_args.scm"     $ Number 105065
     wStd "test/test_fold.scm"     $ Number 42
 
+    runExpr Nothing "test/define.scm"         $ Number 4
+    runExpr Nothing "test/define_order.scm"   $ Number 42
+    runExpr Nothing "test/define_lambda.scm"  $ String "smalltalk"
+    runExpr Nothing "test/test_eval_args.scm" $ Number 1558
+
 -- run file w/ stdlib
 wStd :: T.Text -> LispVal -> SpecWith ()
 wStd = runExpr (Just "test/stdlib_mod.scm")
